@@ -6,10 +6,13 @@ import {
   type Address as AddressType,
   type Client,
   type Hex,
+  TypedDataDefinition,
   hashMessage,
+  hashTypedData,
   isAddress,
   isHex,
   recoverMessageAddress,
+  recoverTypedDataAddress,
 } from "viem";
 import { getCode, readContract } from "viem/actions";
 import { useClient } from "wagmi";
@@ -119,6 +122,8 @@ const ViewSignature: React.FC = () => {
   const client = useClient();
 
   const message = searchParams.get("message");
+  const rawTypedData = searchParams.get("typedData");
+  const [typedData, setTypedData] = useState<TypedDataDefinition | null>(null);
   const [signatures, setSignatures] = useState<string[]>([]);
   const [addresses, setAddresses] = useState<string[]>([]);
   const [addressChecks, setAddressChecks] = useState<SignatureStatus[]>([]);
@@ -131,26 +136,27 @@ const ViewSignature: React.FC = () => {
   }, [searchParams]);
 
   useEffect(() => {
-    if (!client || !message || !signatures.length || !addresses.length) return;
+    if (!client || (!message && !typedData) || !signatures.length || !addresses.length) return;
 
     const verifySignatures = async () => {
       const checks = await Promise.all(
         signatures.map(async (sig, index) => {
-          await new Promise(resolve => setTimeout(resolve, VERIFICATION_DELAY * (index + 1)));
-
           if (index + 1 > addresses.length || !isAddress(addresses[index]) || !isHex(sig)) {
             return SignatureStatus.INVALID;
           }
 
           try {
-            const signingAddress = await recoverMessageAddress({ message, signature: sig });
+            const signingAddress = message
+              ? await recoverMessageAddress({ message, signature: sig })
+              : await recoverTypedDataAddress({ ...typedData, signature: sig });
+
             if (!signingAddress) return SignatureStatus.INVALID;
 
             if (signingAddress.toLowerCase() === addresses[index].toLowerCase()) {
               return SignatureStatus.MATCH;
             }
 
-            const messageHash = hashMessage(message);
+            const messageHash = message ? hashMessage(message) : hashTypedData(typedData);
             if (!messageHash) return SignatureStatus.INVALID;
 
             return checkEip1271(client, addresses[index], messageHash, sig);
@@ -167,7 +173,17 @@ const ViewSignature: React.FC = () => {
     verifySignatures();
   }, [signatures, message, client, addresses]);
 
-  if (!message) {
+  useEffect(() => {
+    if (rawTypedData) {
+      try {
+        setTypedData(JSON.parse(decodeURIComponent(rawTypedData)));
+      } catch (error) {
+        console.error("Failed to parse typed data:", error);
+      }
+    }
+  }, [rawTypedData, setTypedData]);
+
+  if (!message && !rawTypedData) {
     router.push("/");
     return null;
   }
@@ -177,10 +193,25 @@ const ViewSignature: React.FC = () => {
       <div className="card bg-base-100 w-96 shadow-xl">
         <div className="card-body gap-4">
           <div>
-            <h2 className="card-title">Message</h2>
-            <div className="bg-base-200 p-4 rounded-lg">
-              <p className="text-xs font-mono text-base-content break-all my-0">{message}</p>
-            </div>
+            {message && (
+              <>
+                <h2 className="card-title">Message</h2>
+                <div className="bg-base-200 p-4 rounded-lg">
+                  <p className="text-xs font-mono text-base-content break-all my-0">{message}</p>
+                </div>
+              </>
+            )}
+
+            {typedData && (
+              <>
+                <h2 className="card-title">Typed Data</h2>
+                <div className="bg-base-200 p-4 rounded-lg">
+                  <pre className="text-xs font-mono text-base-content break-all my-0">
+                    {JSON.stringify(typedData, null, 2)}
+                  </pre>
+                </div>
+              </>
+            )}
           </div>
 
           <div>

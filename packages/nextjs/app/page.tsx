@@ -1,10 +1,10 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import type { NextPage } from "next";
 import { useLocalStorage } from "usehooks-ts";
 import { useAccount, useSignMessage } from "wagmi";
-import {useRouter} from "next/navigation";
 
 const Home: NextPage = () => {
   const { isConnected, address } = useAccount();

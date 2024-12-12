@@ -10,7 +10,7 @@ export const SignatureMessage: React.FC<MessageSectionProps> = ({ message, typed
       {!message && !typedData && (
         <>
           <h2 className="card-title skeleton h-7 w-1/3 min-w-48"></h2>
-          <div className="bg-base-200 rounded-lg skeleton h-60"></div>
+          <div className="rounded-lg skeleton h-60"></div>
         </>
       )}
 
@@ -32,7 +32,7 @@ export const SignatureMessage: React.FC<MessageSectionProps> = ({ message, typed
               className="[&>pre]:p-4 [&>pre]:rounded-lg [&>pre]:overflow-x-auto [&>pre]:text-sm [&>pre]:h-60 [&>pre]:overflow-y-auto"
             />
           ) : (
-            <div className="bg-base-200 rounded-lg skeleton h-60"></div>
+            <div className="rounded-lg skeleton h-60"></div>
           )}
         </>
       )}

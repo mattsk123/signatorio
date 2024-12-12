@@ -28,7 +28,7 @@ export const SignaturesList: React.FC<SignaturesListProps> = ({ signatures, addr
             </div>
           </div>
         ))}
-        {signatures.length === 0 && <div className="bg-base-200 rounded-lg skeleton h-32"></div>}
+        {signatures.length === 0 && <div className="rounded-lg skeleton h-32"></div>}
       </div>
     </div>
   );

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useSearchParams } from "next/navigation";
 import { NextPage } from "next";
 import { TypedDataDefinition } from "viem";
 import { useIpfsData } from "~~/app/ipfs/[cid]/_components/useIpfsData";

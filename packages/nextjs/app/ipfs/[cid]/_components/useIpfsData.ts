@@ -23,6 +23,8 @@ export const useIpfsData = (
     const fetchFromIpfs = async () => {
       if (!ipfs) return;
 
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
       try {
         const response = await fetch(`https://pineapple.fyi/ipfs/${ipfs}`);
         const data: IpfsData = await response.json();

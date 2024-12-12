@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { codeToHtml } from "shiki";
 import {
   type Address as AddressType,
   type Client,
@@ -183,53 +184,76 @@ const ViewSignature: React.FC = () => {
     }
   }, [rawTypedData, setTypedData]);
 
+  const [highlightedTypedData, setHighlightedTypedData] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!typedData) return;
+
+    const highlightTypedData = async () => {
+      const html = await codeToHtml(JSON.stringify(typedData, null, 2), {
+        lang: "json",
+        themes: {
+          light: "min-light",
+          dark: "nord",
+        },
+      });
+
+      setHighlightedTypedData(html);
+    };
+
+    highlightTypedData();
+  }, [typedData]);
+
   if (!message && !rawTypedData) {
     router.push("/");
     return null;
   }
 
   return (
-    <div className="flex flex-col max-w-xl mx-auto p-4 space-y-4">
-      <div className="card bg-base-100 w-96 shadow-xl">
-        <div className="card-body gap-4">
-          <div>
-            {message && (
-              <>
-                <h2 className="card-title">Message</h2>
-                <div className="bg-base-200 p-4 rounded-lg">
-                  <p className="text-xs font-mono text-base-content break-all my-0">{message}</p>
-                </div>
-              </>
-            )}
+    <div className="flex items-center flex-col flex-grow pt-10">
+      <div className="px-5 container max-w-screen-sm">
+        <div className="card bg-base-100 shadow-xl">
+          <div className="card-body gap-4">
+            <div>
+              {message && (
+                <>
+                  <h2 className="card-title">Message</h2>
+                  <div className="bg-base-200 p-4 rounded-lg">
+                    <p className="text-xs font-mono text-base-content break-all my-0">{message}</p>
+                  </div>
+                </>
+              )}
 
-            {typedData && (
-              <>
-                <h2 className="card-title">Typed Data</h2>
-                <div className="bg-base-200 p-4 rounded-lg">
-                  <pre className="text-xs font-mono text-base-content break-all my-0">
-                    {JSON.stringify(typedData, null, 2)}
-                  </pre>
-                </div>
-              </>
-            )}
-          </div>
+              {typedData && (
+                <>
+                  <h2 className="card-title">Typed Data</h2>
+                  {highlightedTypedData && (
+                    <div
+                      dangerouslySetInnerHTML={{ __html: highlightedTypedData }}
+                      className="[&>pre]:p-4 [&>pre]:rounded-2xl [&>pre]:overflow-x-auto"
+                    />
+                  )}
+                </>
+              )}
+            </div>
 
-          <div>
-            <h2 className="card-title">Signatures</h2>
-            {signatures.map((signature, index) => (
-              <div key={index} className="bg-base-200 p-4 rounded-lg">
-                <div className="flex items-center gap-2">
-                  <Address address={addresses[index]} />
-                  <div className="flex-grow" />
-                  <div className="text-xs">
-                    <SignatureStatusIcon status={addressChecks[index]} />
+            <div>
+              <h2 className="card-title">Signatures</h2>
+              {signatures.map((signature, index) => (
+                <div key={index} className="bg-base-200 p-4 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <Address address={addresses[index]} />
+                    <div className="flex-grow" />
+                    <div className="text-xs">
+                      <SignatureStatusIcon status={addressChecks[index]} />
+                    </div>
+                  </div>
+                  <div className="mt-2">
+                    <p className="text-xs font-mono text-base-content/70 break-all mb-0">{signature}</p>
                   </div>
                 </div>
-                <div className="mt-2">
-                  <p className="text-xs font-mono text-base-content/70 break-all mb-0">{signature}</p>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </div>

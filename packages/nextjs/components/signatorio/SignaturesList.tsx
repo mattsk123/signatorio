@@ -1,6 +1,6 @@
 import { SignatureStatusIcon } from "./SignatureStatusIcon";
-import { SignatureStatus } from "./types";
 import { Address } from "~~/components/scaffold-eth";
+import { SignatureStatus } from "~~/types/signatorio/signatures";
 
 interface SignaturesListProps {
   signatures: string[];

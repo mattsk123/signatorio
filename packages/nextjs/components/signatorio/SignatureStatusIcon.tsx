@@ -1,5 +1,5 @@
-import { SignatureStatus } from "./types";
 import { CheckCircleIcon, ExclamationCircleIcon } from "@heroicons/react/24/outline";
+import { SignatureStatus } from "~~/types/signatorio/signatures";
 
 interface SignatureStatusIconProps {
   status: SignatureStatus | undefined;

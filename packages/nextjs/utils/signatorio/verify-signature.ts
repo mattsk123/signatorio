@@ -1,6 +1,6 @@
-import { EIP1271_SPEC, SignatureStatus } from "./types";
 import { Address as AddressType, Client, Hex } from "viem";
 import { getCode, readContract } from "viem/actions";
+import { EIP1271_SPEC, SignatureStatus } from "~~/types/signatorio/signatures";
 
 export const checkEip1271 = async (
   client: Client,

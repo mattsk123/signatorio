@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import { SignatureStatus } from "./types";
-import { checkEip1271 } from "./verify-signature";
+import { checkEip1271 } from "../../utils/signatorio/verify-signature";
 import {
   TypedDataDefinition,
   hashMessage,
@@ -11,6 +10,7 @@ import {
   recoverTypedDataAddress,
 } from "viem";
 import { useClient } from "wagmi";
+import { SignatureStatus } from "~~/types/signatorio/signatures";
 
 export const useSignatureVerification = (
   message: string | null,

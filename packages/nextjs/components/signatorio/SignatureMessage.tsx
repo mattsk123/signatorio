@@ -22,7 +22,7 @@ export const SignatureMessage: React.FC<MessageSectionProps> = ({ message, typed
           {highlightedTypedData && (
             <div
               dangerouslySetInnerHTML={{ __html: highlightedTypedData }}
-              className="[&>pre]:p-4 [&>pre]:rounded-2xl [&>pre]:overflow-x-auto"
+              className="[&>pre]:p-4 [&>pre]:rounded-lg [&>pre]:overflow-x-auto [&>pre]:text-sm [&>pre]:max-h-80 [&>pre]:overflow-y-auto"
             />
           )}
         </>

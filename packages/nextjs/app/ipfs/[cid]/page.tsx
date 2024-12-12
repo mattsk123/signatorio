@@ -11,9 +11,7 @@ import { useSignatureVerification } from "~~/hooks/signatorio/useSignatureVerifi
 import { useTypedDataHighlight } from "~~/hooks/signatorio/useTypedDataHighlight";
 
 const ViewIpfsSignature: NextPage<{ params: { cid: string } }> = ({ params }) => {
-  const searchParams = useSearchParams();
-
-  const [message, setMessage] = useState(searchParams.get("message"));
+  const [message, setMessage] = useState<string | null>(null);
   const [typedData, setTypedData] = useState<TypedDataDefinition | null>(null);
   const [signatures, setSignatures] = useState<string[]>([]);
   const [addresses, setAddresses] = useState<string[]>([]);
@@ -33,6 +31,10 @@ const ViewIpfsSignature: NextPage<{ params: { cid: string } }> = ({ params }) =>
       <div className="px-5 container max-w-screen-sm">
         <div className="card bg-base-100 shadow-xl">
           <div className="card-body gap-4">
+            <p className="whitespace-nowrap overflow-ellipsis overflow-hidden -mb-4">
+              Retrieved from IPFS: <span className="font-mono">{params.cid}</span>
+            </p>
+
             <SignatureMessage message={message} typedData={typedData} highlightedTypedData={highlightedTypedData} />
             <SignaturesList signatures={signatures} addresses={addresses} addressChecks={addressChecks} />
           </div>
@@ -41,5 +43,4 @@ const ViewIpfsSignature: NextPage<{ params: { cid: string } }> = ({ params }) =>
     </div>
   );
 };
-
 export default ViewIpfsSignature;

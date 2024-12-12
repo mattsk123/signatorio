@@ -4,23 +4,33 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { SignatureMessage } from "./_components/SignatureMessage";
 import { SignaturesList } from "./_components/SignaturesList";
+import { useIpfsData } from "./_components/useIpfsData";
 import { useSignatureVerification } from "./_components/useSignatureVerification";
-import { codeToHtml } from "shiki";
+import { useTypedDataHighlight } from "./_components/useTypedDataHighlight";
 import { TypedDataDefinition } from "viem";
 
 const ViewSignature: React.FC = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const message = searchParams.get("message");
+  const [message, setMessage] = useState(searchParams.get("message"));
   const rawTypedData = searchParams.get("typedData");
+  const ipfs = searchParams.get("ipfs");
   const [typedData, setTypedData] = useState<TypedDataDefinition | null>(null);
   const [signatures, setSignatures] = useState<string[]>([]);
   const [addresses, setAddresses] = useState<string[]>([]);
-  const [highlightedTypedData, setHighlightedTypedData] = useState<string | null>(null);
 
   const addressChecks = useSignatureVerification(message, typedData, signatures, addresses);
+  const highlightedTypedData = useTypedDataHighlight(typedData);
 
+  useIpfsData(ipfs, {
+    setMessage,
+    setTypedData,
+    setSignatures,
+    setAddresses,
+  });
+
+  // Handle initial data from search params
   useEffect(() => {
     const sigs = searchParams.get("signatures") || "";
     const addrs = searchParams.get("addresses") || "";
@@ -28,6 +38,7 @@ const ViewSignature: React.FC = () => {
     setAddresses(addrs ? addrs.split(",") : []);
   }, [searchParams]);
 
+  // Parse typed data from URL
   useEffect(() => {
     if (rawTypedData) {
       try {
@@ -38,21 +49,7 @@ const ViewSignature: React.FC = () => {
     }
   }, [rawTypedData]);
 
-  useEffect(() => {
-    if (!typedData) return;
-
-    const highlightTypedData = async () => {
-      const html = await codeToHtml(JSON.stringify(typedData, null, 2), {
-        lang: "json",
-        themes: { light: "min-light", dark: "nord" },
-      });
-      setHighlightedTypedData(html);
-    };
-
-    highlightTypedData();
-  }, [typedData]);
-
-  if (!message && !rawTypedData) {
+  if (!message && !rawTypedData && !ipfs) {
     router.push("/");
     return null;
   }

@@ -2,13 +2,16 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { NextPage } from "next";
 import { TypedDataDefinition } from "viem";
 import { SignatureMessage } from "~~/components/signatorio/SignatureMessage";
 import { SignaturesList } from "~~/components/signatorio/SignaturesList";
 import { useSignatureVerification } from "~~/hooks/signatorio/useSignatureVerification";
 import { useTypedDataHighlight } from "~~/hooks/signatorio/useTypedDataHighlight";
 
-const ViewSignature: React.FC = () => {
+const ViewSignature: NextPage<{
+  searchParams: { [key: string]: string | string[] | undefined };
+}> = ({ searchParams: _ }) => {
   const searchParams = useSearchParams();
   const router = useRouter();
 

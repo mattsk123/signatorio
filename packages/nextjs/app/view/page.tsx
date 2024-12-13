@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { NextPage } from "next";
 import { TypedDataDefinition } from "viem";
 import { SignatureMessage } from "~~/components/signatorio/SignatureMessage";
@@ -11,12 +11,11 @@ import { useTypedDataHighlight } from "~~/hooks/signatorio/useTypedDataHighlight
 
 const ViewSignature: NextPage<{
   searchParams: { [key: string]: string | string[] | undefined };
-}> = ({ searchParams: _ }) => {
-  const searchParams = useSearchParams();
+}> = ({ searchParams }) => {
   const router = useRouter();
 
-  const message = searchParams.get("message");
-  const rawTypedData = searchParams.get("typedData");
+  const message = typeof searchParams["message"] === "string" ? searchParams["message"] : null;
+  const rawTypedData = typeof searchParams["typedData"] === "string" ? searchParams["typedData"] : null;
   const [typedData, setTypedData] = useState<TypedDataDefinition | null>(null);
   const [signatures, setSignatures] = useState<string[]>([]);
   const [addresses, setAddresses] = useState<string[]>([]);
@@ -26,10 +25,10 @@ const ViewSignature: NextPage<{
 
   // Handle initial data from search params
   useEffect(() => {
-    const sigs = searchParams.get("signatures") || "";
-    const addrs = searchParams.get("addresses") || "";
-    setSignatures(sigs ? sigs.split(",") : []);
-    setAddresses(addrs ? addrs.split(",") : []);
+    const sigs = searchParams["signatures"] ?? [];
+    const addrs = searchParams["addresses"] ?? [];
+    setSignatures(typeof sigs === "string" ? sigs.split(",") : sigs);
+    setAddresses(typeof addrs === "string" ? addrs.split(",") : addrs);
   }, [searchParams]);
 
   // Parse typed data from URL

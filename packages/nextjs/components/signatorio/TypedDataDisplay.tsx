@@ -68,7 +68,7 @@ export const TypedDataDisplay = ({ typedData }: TypedDataProps) => {
         <div className="flex space-x-1 items-center">
           [
           {value.map((item, index) => (
-            <span key={index} className="text-gray-600">
+            <span key={index} className="text-gray-600 dark:text-gray-400">
               {JSON.stringify(item)}
               {index !== value.length - 1 && ","}
             </span>

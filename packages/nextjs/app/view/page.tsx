@@ -7,7 +7,6 @@ import { TypedDataDefinition } from "viem";
 import { SignatureMessage } from "~~/components/signatorio/SignatureMessage";
 import { SignaturesList } from "~~/components/signatorio/SignaturesList";
 import { useSignatureVerification } from "~~/hooks/signatorio/useSignatureVerification";
-import { useTypedDataHighlight } from "~~/hooks/signatorio/useTypedDataHighlight";
 
 const ViewSignature: NextPage<{
   searchParams: { [key: string]: string | string[] | undefined };
@@ -21,7 +20,6 @@ const ViewSignature: NextPage<{
   const [addresses, setAddresses] = useState<string[]>([]);
 
   const addressChecks = useSignatureVerification(message, typedData, signatures, addresses);
-  const highlightedTypedData = useTypedDataHighlight(typedData);
 
   // Handle initial data from search params
   useEffect(() => {
@@ -52,7 +50,7 @@ const ViewSignature: NextPage<{
       <div className="px-5 container max-w-screen-sm">
         <div className="card bg-base-100 shadow-xl">
           <div className="card-body gap-4">
-            <SignatureMessage message={message} typedData={typedData} highlightedTypedData={highlightedTypedData} />
+            <SignatureMessage message={message} typedData={typedData} />
             <SignaturesList signatures={signatures} addresses={addresses} addressChecks={addressChecks} />
           </div>
         </div>

@@ -3,10 +3,9 @@ import { TypedDataDisplay } from "./TypedDataDisplay";
 interface MessageSectionProps {
   message: string | null;
   typedData: any;
-  highlightedTypedData: string | null;
 }
 
-export const SignatureMessage: React.FC<MessageSectionProps> = ({ message, typedData, highlightedTypedData }) => {
+export const SignatureMessage: React.FC<MessageSectionProps> = ({ message, typedData }) => {
   return (
     <div>
       {!message && !typedData && (

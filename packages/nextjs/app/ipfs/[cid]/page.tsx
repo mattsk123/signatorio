@@ -7,7 +7,6 @@ import { useIpfsData } from "~~/app/ipfs/[cid]/_components/useIpfsData";
 import { SignatureMessage } from "~~/components/signatorio/SignatureMessage";
 import { SignaturesList } from "~~/components/signatorio/SignaturesList";
 import { useSignatureVerification } from "~~/hooks/signatorio/useSignatureVerification";
-import { useTypedDataHighlight } from "~~/hooks/signatorio/useTypedDataHighlight";
 
 const ViewIpfsSignature: NextPage<{ params: { cid: string } }> = ({ params }) => {
   const [message, setMessage] = useState<string | null>(null);
@@ -16,7 +15,6 @@ const ViewIpfsSignature: NextPage<{ params: { cid: string } }> = ({ params }) =>
   const [addresses, setAddresses] = useState<string[]>([]);
 
   const addressChecks = useSignatureVerification(message, typedData, signatures, addresses);
-  const highlightedTypedData = useTypedDataHighlight(typedData);
 
   useIpfsData(params.cid, {
     setMessage,
@@ -34,7 +32,7 @@ const ViewIpfsSignature: NextPage<{ params: { cid: string } }> = ({ params }) =>
               Retrieved from IPFS: <span className="font-mono">{params.cid}</span>
             </p>
 
-            <SignatureMessage message={message} typedData={typedData} highlightedTypedData={highlightedTypedData} />
+            <SignatureMessage message={message} typedData={typedData} />
             <SignaturesList signatures={signatures} addresses={addresses} addressChecks={addressChecks} />
           </div>
         </div>

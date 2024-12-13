@@ -1,3 +1,5 @@
+import { TypedDataDisplay } from "./TypedDataDisplay";
+
 interface MessageSectionProps {
   message: string | null;
   typedData: any;
@@ -26,14 +28,7 @@ export const SignatureMessage: React.FC<MessageSectionProps> = ({ message, typed
       {typedData && (
         <>
           <h2 className="card-title">Typed Data</h2>
-          {highlightedTypedData ? (
-            <div
-              dangerouslySetInnerHTML={{ __html: highlightedTypedData }}
-              className="[&>pre]:p-4 [&>pre]:rounded-lg [&>pre]:overflow-x-auto [&>pre]:text-sm [&>pre]:h-60 [&>pre]:overflow-y-auto"
-            />
-          ) : (
-            <div className="rounded-lg skeleton h-60"></div>
-          )}
+          <TypedDataDisplay typedData={typedData} />
         </>
       )}
     </div>

@@ -12,12 +12,10 @@ const TypeBadge = ({ type }: { type: string }) => {
       default: ArrowRightCircle,
     };
 
-    // Handle numeric types
     if (/^(u)?int(\d+)$/.test(typeName)) {
       return Hash;
     }
 
-    // Handle array types
     if (typeName.includes("[]")) {
       return List;
     }
@@ -33,12 +31,10 @@ const TypeBadge = ({ type }: { type: string }) => {
       default: "bg-gray-100 text-gray-800",
     };
 
-    // Handle numeric types
     if (/^(u)?int(8|16|32|64|128|256)$/.test(typeName)) {
       return "bg-yellow-100 text-yellow-800";
     }
 
-    // Handle array types
     if (typeName.includes("[]")) {
       return "bg-red-100 text-red-800";
     }
@@ -61,11 +57,57 @@ type TypedDataProps = {
   typedData: TypedDataDefinition;
 };
 
-export const TypedDataDisplay = ({ typedData }: TypedDataProps) => {
-  const renderMessageValue = (value: unknown) => {
+const MessageField = ({
+  name,
+  value,
+  type,
+  types,
+  depth = 0,
+}: {
+  name: string;
+  value: unknown;
+  type: string;
+  types: TypedDataDefinition["types"];
+  depth?: number;
+}) => {
+  // Check if the type is a struct type (exists in types definition)
+  const isStruct = type in types;
+
+  // Handle arrays of structs
+  const isArrayType = type.endsWith("[]");
+  const baseType = isArrayType ? type.slice(0, -2) : type;
+  const isArrayOfStructs = isArrayType && baseType in types;
+
+  const renderValue = () => {
+    // Handle arrays
     if (Array.isArray(value)) {
+      if (isArrayOfStructs) {
+        return (
+          <div className="flex flex-col space-y-2">
+            {value.map((item, index) => (
+              <div key={index} className="ml-4">
+                <div className="text-gray-600 dark:text-gray-400">[{index}]</div>
+                <div className="border-l-2 border-base-200">
+                  {types[baseType].map((field, fieldIndex) => (
+                    <Fragment key={field.name}>
+                      {fieldIndex !== 0 && <div className="divider my-0" />}
+                      <MessageField
+                        name={field.name}
+                        value={item[field.name]}
+                        type={field.type}
+                        types={types}
+                        depth={depth + 1}
+                      />
+                    </Fragment>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        );
+      }
       return (
-        <div className="flex space-x-1 items-center">
+        <div className="flex space-x-1 items-center whitespace-nowrap">
           [
           {value.map((item, index) => (
             <span key={index} className="text-gray-600 dark:text-gray-400">
@@ -78,13 +120,54 @@ export const TypedDataDisplay = ({ typedData }: TypedDataProps) => {
       );
     }
 
+    // Handle addresses
     if (typeof value === "string" && isAddress(value)) {
       return <Address address={value} />;
     }
 
-    return JSON.stringify(value);
+    // Handle primitive values
+    if (!isStruct) {
+      return JSON.stringify(value);
+    }
+
+    return null;
   };
 
+  const paddingLeft = `${depth * 1.5}rem`;
+
+  return (
+    <div className="w-full" style={{ paddingLeft }}>
+      <div className="flex justify-between items-center py-2 border-gray-200 overflow-x-auto">
+        <span className="font-medium text-gray-700 mr-8 dark:text-gray-300">{name}</span>
+        <div className="flex items-center space-x-2">
+          <TypeBadge type={type} />
+          {!isStruct && <span className="text-gray-600 dark:text-gray-400">{renderValue()}</span>}
+        </div>
+      </div>
+
+      {isStruct && value && typeof value === "object" ? (
+        <>
+          <div className="border-l-2 border-base-200 ml-4">
+            {types[type].map((field, index) => (
+              <Fragment key={field.name}>
+                {index !== 0 && <div className="divider my-0" style={{ paddingLeft }} />}
+                <MessageField
+                  name={field.name}
+                  value={(value as any)[field.name]}
+                  type={field.type}
+                  types={types}
+                  depth={depth + 1}
+                />
+              </Fragment>
+            ))}
+          </div>
+        </>
+      ) : null}
+    </div>
+  );
+};
+
+export const TypedDataDisplay = ({ typedData }: TypedDataProps) => {
   return (
     <div>
       <div className="card card-compact bg-base-300 mb-4 px-3">
@@ -92,22 +175,17 @@ export const TypedDataDisplay = ({ typedData }: TypedDataProps) => {
           <h3 className="card-title">
             Message <TypeBadge type={typedData.primaryType} />
           </h3>
-          {Object.entries(typedData.message).map(([key, value], i) => {
-            const fieldType = typedData.types[typedData.primaryType].find(f => f.name === key)?.type || "unknown";
-
-            return (
-              <Fragment key={key}>
-                {i !== 0 && <div className="divider my-0" />}
-                <div className="flex justify-between items-center py-2 border-gray-200 overflow-x-auto">
-                  <span className="font-medium text-gray-700 mr-8 dark:text-gray-300">{key}</span>
-                  <div className="flex items-center space-x-2">
-                    <TypeBadge type={fieldType} />
-                    <span className="text-gray-600 dark:text-gray-400">{renderMessageValue(value)}</span>
-                  </div>
-                </div>
-              </Fragment>
-            );
-          })}
+          {typedData.types[typedData.primaryType].map((field, index) => (
+            <Fragment key={field.name}>
+              {index !== 0 && <div className="divider my-0" />}
+              <MessageField
+                name={field.name}
+                value={typedData.message[field.name]}
+                type={field.type}
+                types={typedData.types}
+              />
+            </Fragment>
+          ))}
         </div>
       </div>
 

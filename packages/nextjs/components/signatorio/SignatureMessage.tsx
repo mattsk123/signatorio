@@ -1,4 +1,4 @@
-import { TypedDataDisplay } from "./TypedDataDisplay";
+import { TypedDataDisplay } from "./typed-data/TypedDataDisplay";
 
 interface MessageSectionProps {
   message: string | null;

@@ -15,9 +15,9 @@ export const MessageField = ({ name, value, type, types, depth = 0 }: MessageFie
   const isArray = type.endsWith("[]") && Array.isArray(value);
   const isStruct = type in types;
 
-  const isPrimative = !isArray && !isStruct;
+  const isPrimitive = !isArray && !isStruct;
 
-  if (isPrimative) {
+  if (isPrimitive) {
     const renderValue = () => {
       if (typeof value === "string" && isAddress(value)) {
         return <Address address={value} />;

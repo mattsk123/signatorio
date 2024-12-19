@@ -7,7 +7,7 @@ export type MessageType = (typeof messageTypeEnum.enumValues)[number];
 export const messagesTable = pgTable("messages", {
   id: uuid("id").defaultRandom().primaryKey(),
   type: messageTypeEnum("type").notNull(),
-  message: text("message"),
+  message: text("message").notNull(),
   creator: varchar("creator", { length: 42 }).notNull().$type<Address>(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

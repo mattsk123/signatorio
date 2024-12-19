@@ -9,6 +9,7 @@ import { NextPage } from "next";
 import { useLocalStorage } from "usehooks-ts";
 import { hashTypedData } from "viem";
 import { useAccount } from "wagmi";
+import { MessageType } from "~~/services/db/schema";
 
 const Home: NextPage = () => {
   const { address } = useAccount();
@@ -40,14 +41,28 @@ const Home: NextPage = () => {
     }
   }, [typedData]);
 
-  const handleSignature = (signature: string, params: Record<string, string>) => {
-    const searchParams = new URLSearchParams();
-    Object.entries(params).forEach(([key, value]) => {
-      searchParams.set(key, value);
+  const handleSignature = async (signature: string, message: string, messageType: MessageType) => {
+    if (!address) return;
+
+    const res = await fetch("/api/signatures", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        signature,
+        message,
+        messageType,
+        address,
+      }),
     });
-    searchParams.set("signatures", signature);
-    searchParams.set("addresses", address ?? "");
-    router.push(`/view?${searchParams.toString()}`);
+
+    if (res.ok) {
+      const { messageId } = await res.json();
+      router.push(`/view/${messageId}`);
+    } else {
+      console.error("Failed to create message with signature", await res.json());
+    }
   };
 
   return (
@@ -62,7 +77,7 @@ const Home: NextPage = () => {
           <SignMessage
             messageText={messageText}
             setMessageText={setMessageText}
-            onSign={signature => handleSignature(signature, { message: messageText })}
+            onSign={signature => handleSignature(signature, messageText, "text")}
           />
 
           <div className="divider">OR</div>
@@ -76,11 +91,7 @@ const Home: NextPage = () => {
             setInvalidJson={setInvalidJson}
             typedDataChecks={typedDataChecks}
             setTypedDataChecks={setTypedDataChecks}
-            onSign={signature =>
-              handleSignature(signature, {
-                typedData: encodeURIComponent(JSON.stringify(typedData)),
-              })
-            }
+            onSign={signature => handleSignature(signature, JSON.stringify(typedData), "typed_data")}
           />
         </div>
       </div>

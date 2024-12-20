@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { NextPage } from "next";
 import { TypedDataDefinition } from "viem";
 import { useAccount, useSignMessage, useSignTypedData } from "wagmi";
@@ -39,7 +39,7 @@ const ViewSignature: NextPage<{ params: { id: string } }> = ({ params }: { param
     },
   });
 
-  const fetchMessage = async () => {
+  const fetchMessage = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
@@ -78,7 +78,7 @@ const ViewSignature: NextPage<{ params: { id: string } }> = ({ params }: { param
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [id]);
 
   const submitSignature = async (signature: string) => {
     try {
@@ -128,7 +128,7 @@ const ViewSignature: NextPage<{ params: { id: string } }> = ({ params }: { param
 
   useEffect(() => {
     fetchMessage();
-  }, [id]);
+  }, [fetchMessage]);
 
   if (isLoading) {
     return (

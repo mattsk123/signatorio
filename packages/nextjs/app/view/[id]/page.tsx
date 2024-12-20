@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { NextPage } from "next";
 import { TypedDataDefinition } from "viem";
+import { useAccount, useSignMessage, useSignTypedData } from "wagmi";
 import { SignatureMessage } from "~~/components/signatorio/SignatureMessage";
 import { SignaturesList } from "~~/components/signatorio/SignaturesList";
 import { useSignatureVerification } from "~~/hooks/signatorio/useSignatureVerification";
@@ -10,6 +11,7 @@ import { messagesTable, signaturesTable } from "~~/services/db/schema";
 
 const ViewSignature: NextPage<{ params: { id: string } }> = ({ params }: { params: { id: string } }) => {
   const { id } = params;
+  const { address } = useAccount();
 
   const [message, setMessage] = useState<string | null>(null);
   const [typedData, setTypedData] = useState<TypedDataDefinition | null>(null);
@@ -17,8 +19,71 @@ const ViewSignature: NextPage<{ params: { id: string } }> = ({ params }: { param
   const [addresses, setAddresses] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const addressChecks = useSignatureVerification(message, typedData, signatures, addresses);
+
+  const { signMessage } = useSignMessage({
+    mutation: {
+      onSuccess: async signature => {
+        await submitSignature(signature);
+      },
+    },
+  });
+
+  const { signTypedData } = useSignTypedData({
+    mutation: {
+      onSuccess: async signature => {
+        await submitSignature(signature);
+      },
+    },
+  });
+
+  const submitSignature = async (signature: string) => {
+    try {
+      setIsSubmitting(true);
+      setError(null);
+
+      const response = await fetch(`/api/signatures/${id}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          signature,
+          signer: address,
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to submit signature");
+      }
+
+      await fetchMessage();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to submit signature");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSign = async () => {
+    if (!address) {
+      setError("Please connect your wallet first");
+      return;
+    }
+
+    try {
+      if (message) {
+        await signMessage({ message });
+      } else if (typedData) {
+        await signTypedData(typedData);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to sign message");
+    }
+  };
 
   useEffect(() => {
     const fetchMessage = async () => {
@@ -98,6 +163,13 @@ const ViewSignature: NextPage<{ params: { id: string } }> = ({ params }: { param
     );
   }
 
+  const addSignatureButtonText = () => {
+    if (!address) return "Connect Wallet";
+    if (addresses.includes(address)) return "Already Signed";
+    if (isSubmitting) return "Signing...";
+    return "Sign Message";
+  };
+
   return (
     <div className="flex items-center flex-col flex-grow pt-10">
       <div className="px-5 container max-w-screen-sm">
@@ -105,6 +177,16 @@ const ViewSignature: NextPage<{ params: { id: string } }> = ({ params }: { param
           <div className="card-body gap-4">
             <SignatureMessage message={message} typedData={typedData} />
             <SignaturesList signatures={signatures} addresses={addresses} addressChecks={addressChecks} />
+
+            <div className="card-actions justify-end mt-4">
+              <button
+                className={`btn btn-primary ${isSubmitting ? "loading" : ""}`}
+                onClick={handleSign}
+                disabled={isSubmitting || !address || addresses.includes(address)}
+              >
+                {addSignatureButtonText()}
+              </button>
+            </div>
           </div>
         </div>
       </div>

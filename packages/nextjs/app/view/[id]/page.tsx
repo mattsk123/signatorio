@@ -39,6 +39,47 @@ const ViewSignature: NextPage<{ params: { id: string } }> = ({ params }: { param
     },
   });
 
+  const fetchMessage = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const res = await fetch(`/api/signatures/${id}`);
+
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+
+      const { message, signatures } = (await res.json()) as {
+        message: typeof messagesTable.$inferSelect;
+        signatures: (typeof signaturesTable.$inferSelect)[];
+      };
+
+      if (!message) {
+        throw new Error("Message not found");
+      }
+
+      if (message.type === "text") {
+        setMessage(message.message);
+      } else if (message.type === "typed_data") {
+        try {
+          setTypedData(JSON.parse(message.message));
+        } catch (e) {
+          throw new Error("Invalid typed data format");
+        }
+      } else {
+        throw new Error("Invalid message type");
+      }
+
+      setSignatures(signatures?.map(s => s.signature) ?? []);
+      setAddresses(signatures?.map(s => s.signer) ?? []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An unknown error occurred");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const submitSignature = async (signature: string) => {
     try {
       setIsSubmitting(true);
@@ -86,47 +127,6 @@ const ViewSignature: NextPage<{ params: { id: string } }> = ({ params }: { param
   };
 
   useEffect(() => {
-    const fetchMessage = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-
-        const res = await fetch(`/api/signatures/${id}`);
-
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
-        }
-
-        const { message, signatures } = (await res.json()) as {
-          message: typeof messagesTable.$inferSelect;
-          signatures: (typeof signaturesTable.$inferSelect)[];
-        };
-
-        if (!message) {
-          throw new Error("Message not found");
-        }
-
-        if (message.type === "text") {
-          setMessage(message.message);
-        } else if (message.type === "typed_data") {
-          try {
-            setTypedData(JSON.parse(message.message));
-          } catch (e) {
-            throw new Error("Invalid typed data format");
-          }
-        } else {
-          throw new Error("Invalid message type");
-        }
-
-        setSignatures(signatures?.map(s => s.signature) ?? []);
-        setAddresses(signatures?.map(s => s.signer) ?? []);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "An unknown error occurred");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchMessage();
   }, [id]);
 

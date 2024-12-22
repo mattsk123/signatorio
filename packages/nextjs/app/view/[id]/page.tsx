@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { ShareModal } from "./_components/ShareModal";
+import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { NextPage } from "next";
 import { TypedDataDefinition } from "viem";
 import { useAccount, useSignMessage, useSignTypedData } from "wagmi";
@@ -13,6 +14,7 @@ import { messagesTable, signaturesTable } from "~~/services/db/schema";
 const ViewSignature: NextPage<{ params: { id: string } }> = ({ params }: { params: { id: string } }) => {
   const { id } = params;
   const { address } = useAccount();
+  const { openConnectModal } = useConnectModal();
 
   const [message, setMessage] = useState<string | null>(null);
   const [typedData, setTypedData] = useState<TypedDataDefinition | null>(null);
@@ -202,8 +204,8 @@ const ViewSignature: NextPage<{ params: { id: string } }> = ({ params }: { param
               </button>
               <button
                 className={`btn btn-primary ${isSubmitting ? "loading" : ""}`}
-                onClick={handleSign}
-                disabled={isSubmitting || !address || addresses.includes(address)}
+                onClick={address ? handleSign : openConnectModal}
+                disabled={isSubmitting || (!!address && addresses.includes(address))}
               >
                 {addSignatureButtonText()}
               </button>

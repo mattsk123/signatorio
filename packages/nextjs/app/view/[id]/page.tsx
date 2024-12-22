@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { ShareModal } from "./_components/ShareModal";
 import { NextPage } from "next";
 import { TypedDataDefinition } from "viem";
 import { useAccount, useSignMessage, useSignTypedData } from "wagmi";
@@ -20,6 +21,9 @@ const ViewSignature: NextPage<{ params: { id: string } }> = ({ params }: { param
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+
+  const shareUrl = `${window.location.origin}/view/${id}`;
 
   const addressChecks = useSignatureVerification(message, typedData, signatures, addresses);
 
@@ -178,7 +182,24 @@ const ViewSignature: NextPage<{ params: { id: string } }> = ({ params }: { param
             <SignatureMessage message={message} typedData={typedData} />
             <SignaturesList signatures={signatures} addresses={addresses} addressChecks={addressChecks} />
 
-            <div className="card-actions justify-end mt-4">
+            <div className="card-actions justify-end mt-4 gap-2">
+              <button className="btn btn-secondary" onClick={() => setIsShareModalOpen(true)}>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+                  />
+                </svg>
+                Share
+              </button>
               <button
                 className={`btn btn-primary ${isSubmitting ? "loading" : ""}`}
                 onClick={handleSign}
@@ -190,6 +211,8 @@ const ViewSignature: NextPage<{ params: { id: string } }> = ({ params }: { param
           </div>
         </div>
       </div>
+
+      <ShareModal isOpen={isShareModalOpen} onClose={() => setIsShareModalOpen(false)} url={shareUrl} />
     </div>
   );
 };

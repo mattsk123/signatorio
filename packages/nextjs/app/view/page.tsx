@@ -18,8 +18,13 @@ const ViewSignature: NextPage<{
   const [typedData, setTypedData] = useState<TypedDataDefinition | null>(null);
   const [signatures, setSignatures] = useState<string[]>([]);
   const [addresses, setAddresses] = useState<string[]>([]);
-
   const addressChecks = useSignatureVerification(message, typedData, signatures, addresses);
+
+  useEffect(() => {
+    if (searchParams["ipfs"]) {
+      router.push(`/ipfs/${searchParams["ipfs"]}`);
+    }
+  }, [router, searchParams]);
 
   // Handle initial data from search params
   useEffect(() => {

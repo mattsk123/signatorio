@@ -57,7 +57,7 @@ export const SignTypedData = ({
       <textarea
         value={manualTypedData}
         className={`textarea font-mono leading-tight ${invalidJson ? "textarea-error" : ""}`}
-        rows={10}
+        rows={20}
         onChange={e => handleTypedDataChange(e.target.value)}
       />
 

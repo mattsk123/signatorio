@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 import { db } from "~~/services/db";
 import { MessageType, messagesTable, signaturesTable } from "~~/services/db/schema";
 
-export const alt = "About Acme";
+export const alt = "Signator.IO";
 export const size = {
   width: 1200,
   height: 630,
